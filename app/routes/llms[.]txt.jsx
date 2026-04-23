@@ -21,10 +21,15 @@ export const loader = async ({ request }) => {
     });
   }
 
-  return new Response(llmFile.content, {
-    headers: {
-      "Content-Type": "text/plain",
-      "Cache-Control": "public, max-age=3600",
-    },
-  });
+  const download = url.searchParams.get("download");
+  const headers = {
+    "Content-Type": "text/plain",
+    "Cache-Control": "public, max-age=3600",
+  };
+
+  if (download === "true") {
+    headers["Content-Disposition"] = 'attachment; filename="llms.txt"';
+  }
+
+  return new Response(llmFile.content, { headers });
 };

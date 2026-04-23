@@ -161,7 +161,7 @@ export default function AppIndex() {
                   <Button icon={ExternalIcon} url={storeViewUrl} target="_blank">
                     View Public File
                   </Button>
-                  <Button icon={ArrowDownIcon} url="/app/download-llm" target="_blank" download="llms.txt">
+                  <Button icon={ArrowDownIcon} url={`${storeViewUrl}?download=true`} target="_blank">
                     Download
                   </Button>
                 </InlineStack>
