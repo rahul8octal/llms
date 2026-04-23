@@ -1,0 +1,52 @@
+
+:root {
+  --llm-primary: #5c6ac4;
+  --llm-secondary: #008060;
+  --llm-bg-gradient: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.Polaris-Page {
+  background: transparent;
+}
+
+.llm-stat-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.llm-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.llm-crawler-grid-item {
+  transition: border-color 0.2s;
+}
+
+.llm-crawler-grid-item:hover {
+  border-color: var(--llm-primary);
+}
+
+/* Custom styles for the tabs to match the premium aesthetic */
+/* Polaris default tabs used */
+
+/* Glassmorphism effects */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.Polaris-Card {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.Polaris-Button--primary {
+  background: linear-gradient(to bottom, #5c6ac4, #4a54a4) !important;
+  border: none !important;
+  box-shadow: 0 4px 6px rgba(92, 106, 196, 0.2) !important;
+}
+
+.Polaris-Button--primary:hover {
+  background: linear-gradient(to bottom, #4a54a4, #3d4586) !important;
+}

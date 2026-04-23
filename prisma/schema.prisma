@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  locales       Json?
+}
+
+model shop_settings {
+  id           Int      @id @default(autoincrement())
+  shop         String   @unique
+  app_language String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+}
+
+model LlmFile {
+  id        String   @id @default(cuid())
+  shop      String   @unique
+  content   String   @db.LongText
+  updatedAt DateTime @updatedAt
+}
+
+model LlmSetting {
+  id                String   @id @default(cuid())
+  shop              String   @unique
+  storeName         String?
+  shopifyDomain     String?
+  customDomain      String?
+  description       String?  @db.Text
+  includeProducts   Boolean  @default(true)
+  includeCollections Boolean @default(true)
+  includeBlogs      Boolean  @default(true)
+  includePages      Boolean  @default(true)
+  productFields     Json?    // e.g. { tags: true, vendor: true, ... }
+  autoGenerate      Boolean  @default(false)
+  selectedCrawlers  Json?    // e.g. { chatgpt: true, claude: true, ... }
+  updatedAt         DateTime @updatedAt
+}
+
+model LlmLog {
+  id          String   @id @default(cuid())
+  shop        String
+  userAgent   String?
+  ipAddress   String?
+  crawlerName String?
+  createdAt   DateTime @default(now())
+
+  @@index([shop])
+}
