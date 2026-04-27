@@ -135,33 +135,35 @@ export default function Crawlers() {
           <div className="llm-premium-banner">
             <BlockStack gap="400">
               <InlineStack align="space-between" blockAlign="center">
-                <BlockStack gap="200">
-                  <InlineStack gap="300" blockAlign="center">
-                    <div style={{ backgroundColor: 'var(--llm-primary)', padding: '8px', borderRadius: '8px', color: 'white' }}>
-                      <Icon source={LockIcon} />
-                    </div>
+                <InlineStack gap="400" blockAlign="center">
+                  <div style={{ backgroundColor: 'var(--llm-primary)', padding: '12px', borderRadius: '12px', color: 'white', display: 'flex', boxShadow: '0 4px 12px rgba(92, 106, 196, 0.2)' }}>
+                    <Icon source={LockIcon} />
+                  </div>
+                  <BlockStack gap="100">
                     <Text variant="headingLg" as="h2">Manage AI Visibility</Text>
-                  </InlineStack>
-                  <Text variant="bodyLg" tone="subdued">
-                    Take control of how AI systems interact with your store. Block or allow specific platforms to optimize your presence in AI search.
-                  </Text>
-                </BlockStack>
-                <div style={{ padding: '8px', borderRadius: '20px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                    <Text variant="bodyLg" tone="subdued">
+                      Optimize your store's presence in AI search results by controlling specific platforms.
+                    </Text>
+                  </BlockStack>
+                </InlineStack>
+                <div style={{ padding: '6px 12px', borderRadius: '20px', border: '1px solid #dcfce7', background: '#f0fdf4' }}>
                   <InlineStack gap="200" blockAlign="center">
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e' }}></div>
-                    <Text variant="bodySm" fontWeight="bold">Robots.txt Active</Text>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', boxShadow: '0 0 8px rgba(34, 197, 94, 0.4)' }}></div>
+                    <Text variant="bodySm" fontWeight="bold" tone="success">Robots.txt Active</Text>
                   </InlineStack>
                 </div>
               </InlineStack>
               
-              <div style={{ backgroundColor: '#f0f4ff', padding: '16px', borderRadius: '12px', border: '1px solid #e0e7ff' }}>
-                <InlineStack gap="300" blockAlign="center">
-                  <Icon source={InfoIcon} tone="brand" />
-                  <Text variant="bodyMd" tone="brand">
-                    Reputable AI companies (OpenAI, Google, Bing) respect these settings. Experimental crawlers may vary in compliance.
-                  </Text>
+              <Box padding="400" background="bg-surface-info-subdued" borderRadius="300" borderStyle="solid" borderWidth="025" borderColor="border-info-subdued">
+                <InlineStack gap="300" blockAlign="center" align="space-between">
+                  <InlineStack gap="300" blockAlign="center">
+                    <Icon source={InfoIcon} tone="info" />
+                    <Text variant="bodyMd" tone="info">
+                      AI giants like OpenAI, Google, and Bing strictly respect these directives. Experimental crawlers may vary in compliance.
+                    </Text>
+                  </InlineStack>
                 </InlineStack>
-              </div>
+              </Box>
             </BlockStack>
           </div>
 

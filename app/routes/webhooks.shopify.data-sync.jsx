@@ -8,17 +8,21 @@ export const action = async ({ request }) => {
   
   console.log(`Received ${topic} webhook for ${shop}`);
 
-  // Check if auto-generation is enabled
+  // Check if auto-sync is enabled for this shop
   const settings = await prisma.llmSetting.findUnique({
     where: { shop },
     select: { autoGenerate: true }
   });
 
   if (settings?.autoGenerate) {
-    console.log(`[Webhook] Auto-generation enabled for ${shop}. Syncing...`);
-    await syncLLMsFile(admin, shop);
+    console.log(`[AutoSync] Triggered by ${topic} for ${shop}. Updating file...`);
+    try {
+      await syncLLMsFile(admin, shop);
+    } catch (e) {
+      console.error(`[AutoSync] Error during sync for ${shop}:`, e);
+    }
   } else {
-    console.log(`[Webhook] Auto-generation disabled for ${shop}. Skipping sync.`);
+    console.log(`[AutoSync] Disabled for ${shop}. Skipping update.`);
   }
 
   return new Response(null, { status: 200 });

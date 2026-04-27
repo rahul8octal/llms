@@ -56,5 +56,10 @@ export const loader = async ({ request }) => {
     headers["Content-Disposition"] = 'attachment; filename="llms.txt"';
   }
 
-  return new Response(llmFile.content, { headers });
+  return new Response(llmFile.content, { 
+    headers: {
+      ...headers,
+      "X-Shopify-App-Proxy-No-Layout": "1"
+    }
+  });
 };

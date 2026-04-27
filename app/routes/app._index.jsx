@@ -133,7 +133,7 @@ export const action = async ({ request }) => {
   const shop = session.shop;
 
   try {
-    const result = await syncLLMsFile(admin, shop);
+    const result = await syncLLMsFile(admin, shop, true);
     return json(result);
   } catch (error) {
     return json({ success: false, error: error.message });
@@ -143,11 +143,13 @@ export const action = async ({ request }) => {
 export default function AppIndex() {
   const { settings, lastUpdated, stats, shop, analytics } = useLoaderData();
   const fetcher = useFetcher();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [toastActive, setToastActive] = useState(false);
   const [toastContent, setToastContent] = useState("");
   const [toastError, setToastError] = useState(false);
 
   useEffect(() => {
+    setIsHydrated(true);
     if (fetcher.data) {
       if (fetcher.data.success) {
         setToastContent("File generated and saved successfully!");
@@ -344,9 +346,13 @@ export default function AppIndex() {
                   </InlineStack>
 
                   <BlockStack gap="200">
-                    <Text variant="bodySm" tone="subdued">Public Endpoint:</Text>
+                    <Text variant="bodySm" tone="subdued">Public Endpoints:</Text>
                     <div className="llm-link-card" style={{ padding: '10px', fontSize: '11px', background: '#f1f5f9' }}>
-                      {storeViewUrl}
+                      <BlockStack gap="100">
+                        <Text variant="bodySm">Catalog: {storeViewUrl}</Text>
+                        <Text variant="bodySm">Robots: https://{shop}/tools/llms/robots.txt</Text>
+                        <Text variant="bodySm">Sitemap: https://{shop}/tools/llms/sitemap.xml</Text>
+                      </BlockStack>
                     </div>
                   </BlockStack>
 
@@ -354,7 +360,7 @@ export default function AppIndex() {
                     <InlineStack gap="100" blockAlign="center">
                       <Icon source={ClockIcon} tone="subdued" />
                       <Text variant="bodySm" tone="subdued">
-                        {lastUpdated ? new Date(lastUpdated).toLocaleTimeString() : "Pending"}
+                        {lastUpdated && isHydrated ? new Date(lastUpdated).toLocaleTimeString() : "Pending"}
                       </Text>
                     </InlineStack>
                     <Button icon={ArrowDownIcon} url={physicalFileUrl} target="_blank" variant="tertiary" size="slim">
@@ -369,10 +375,10 @@ export default function AppIndex() {
                 <BlockStack gap="300">
                   <Text variant="headingMd" as="h3">Quick Actions</Text>
                   <BlockStack gap="200">
-                    <Button fullWidth icon={ExternalIcon} onClick={() => navigate("/app/configuration")}>
+                    <Button fullWidth icon={ExternalIcon} url="/app/configuration">
                       LLM Metadata Settings
                     </Button>
-                    <Button fullWidth icon={ExternalIcon} onClick={() => navigate("/app/crawlers")}>
+                    <Button fullWidth icon={ExternalIcon} url="/app/crawlers">
                       AI Crawler Settings
                     </Button>
                   </BlockStack>

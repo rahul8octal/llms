@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `LlmSetting` ADD COLUMN `robotsContent` TEXT NULL,
+    ADD COLUMN `sitemapContent` TEXT NULL;

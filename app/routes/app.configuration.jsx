@@ -34,7 +34,6 @@ import {
 } from "@shopify/polaris-icons";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
-import { start } from "node:repl";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
@@ -91,6 +90,8 @@ export const action = async ({ request }) => {
     const includePages = formData.get("includePages") === "true";
     const autoGenerate = formData.get("autoGenerate") === "true";
     
+    const robotsContent = formData.get("robotsContent");
+    const sitemapContent = formData.get("sitemapContent");
     const productFields = JSON.parse(formData.get("productFields"));
 
     await prisma.llmSetting.update({
@@ -105,6 +106,8 @@ export const action = async ({ request }) => {
         includePages,
         autoGenerate,
         productFields,
+        robotsContent,
+        sitemapContent,
       },
     });
 
@@ -129,6 +132,8 @@ export default function Configuration() {
     includePages: settings.includePages,
     autoGenerate: settings.autoGenerate,
     productFields: settings.productFields || {},
+    robotsContent: settings.robotsContent || "",
+    sitemapContent: settings.sitemapContent || "",
   });
   const [toastActive, setToastActive] = useState(false);
 
@@ -152,6 +157,8 @@ export default function Configuration() {
     formData.append("includePages", formState.includePages);
     formData.append("autoGenerate", formState.autoGenerate);
     formData.append("productFields", JSON.stringify(formState.productFields));
+    formData.append("robotsContent", formState.robotsContent);
+    formData.append("sitemapContent", formState.sitemapContent);
     fetcher.submit(formData, { method: "post" });
   };
 
@@ -268,6 +275,42 @@ export default function Configuration() {
                       </div>
                     </InlineStack>
                   </Box>
+                </BlockStack>
+              </Card>
+
+              <Card>
+                <BlockStack gap="400">
+                  <div className="llm-section-header">
+                    <Text variant="headingMd" as="h3">Robots.txt Policy</Text>
+                    <Icon source={SearchIcon} tone="brand" />
+                  </div>
+                  <TextField
+                    label="Custom robots.txt Content"
+                    value={formState.robotsContent}
+                    onChange={(val) => setFormState({ ...formState, robotsContent: val })}
+                    helpText="Override directives for bots visiting your AI discovery path."
+                    multiline={6}
+                    autoComplete="off"
+                    placeholder="User-agent: * \nDisallow: /admin/"
+                  />
+                </BlockStack>
+              </Card>
+
+              <Card>
+                <BlockStack gap="400">
+                  <div className="llm-section-header">
+                    <Text variant="headingMd" as="h3">XML Sitemap</Text>
+                    <Icon source={SearchIcon} tone="brand" />
+                  </div>
+                  <TextField
+                    label="Custom sitemap.xml Content"
+                    value={formState.sitemapContent}
+                    onChange={(val) => setFormState({ ...formState, sitemapContent: val })}
+                    helpText="Define custom XML sitemap structure for AI consumption."
+                    multiline={6}
+                    autoComplete="off"
+                    placeholder='<?xml version="1.0" encoding="UTF-8"?>'
+                  />
                 </BlockStack>
               </Card>
             </BlockStack>

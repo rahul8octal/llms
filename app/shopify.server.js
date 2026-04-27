@@ -57,18 +57,18 @@ const shopify = shopifyApp({
       deliveryMethod: DeliveryMethod.Http,
       callbackUrl: "/webhooks/shopify/shop_data_erasure",
     },
-    PRODUCTS_CREATE: {
-      deliveryMethod: DeliveryMethod.Http,
-      callbackUrl: "/webhooks/shopify/products",
-    },
-    PRODUCTS_UPDATE: {
-      deliveryMethod: DeliveryMethod.Http,
-      callbackUrl: "/webhooks/shopify/products",
-    },
-    PRODUCTS_DELETE: {
-      deliveryMethod: DeliveryMethod.Http,
-      callbackUrl: "/webhooks/shopify/products",
-    }
+    PRODUCTS_CREATE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    PRODUCTS_UPDATE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    PRODUCTS_DELETE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    COLLECTIONS_CREATE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    COLLECTIONS_UPDATE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    COLLECTIONS_DELETE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    PAGES_CREATE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    PAGES_UPDATE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    PAGES_DELETE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    ARTICLES_CREATE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    ARTICLES_UPDATE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
+    ARTICLES_DELETE: { deliveryMethod: DeliveryMethod.Http, callbackUrl: "/webhooks/shopify/data-sync" },
   },
   hooks: {
     afterAuth: async ({ session, admin }) => {

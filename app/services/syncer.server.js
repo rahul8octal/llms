@@ -4,7 +4,7 @@ import prisma from "../db.server";
 import { getProducts, getCollections, getBlogs, getPages } from "../models/shopify.server";
 import { generateLLMsTxt } from "./llms.server";
 
-export async function syncLLMsFile(admin, shop) {
+export async function syncLLMsFile(admin, shop, force = false) {
   try {
     const settings = await prisma.llmSetting.findUnique({ where: { shop } });
     if (!settings) {
@@ -12,8 +12,17 @@ export async function syncLLMsFile(admin, shop) {
       return { success: false, error: "Settings not found" };
     }
 
-    // Don't auto-sync if disabled and this is a background job (we'll check this in the caller)
-    // For now, we perform the sync when called.
+    // Debounce: Don't sync more than once every 30 seconds unless forced
+    if (!force) {
+      const lastFile = await prisma.llmFile.findUnique({ 
+        where: { shop }, 
+        select: { updatedAt: true } 
+      });
+      if (lastFile && (Date.now() - new Date(lastFile.updatedAt).getTime() < 30000)) {
+         console.log(`[Sync] Debouncing update for ${shop}. Last sync was < 30s ago.`);
+         return { success: true, skip: true };
+      }
+    }
 
     const [products, collections, blogs, pages] = await Promise.all([
       getProducts(admin),

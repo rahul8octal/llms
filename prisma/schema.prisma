@@ -55,6 +55,8 @@ model LlmSetting {
   productFields     Json?    // e.g. { tags: true, vendor: true, ... }
   autoGenerate      Boolean  @default(false)
   selectedCrawlers  Json?    // e.g. { chatgpt: true, claude: true, ... }
+  robotsContent     String?  @db.Text
+  sitemapContent    String?  @db.Text
   updatedAt         DateTime @updatedAt
 }
 
