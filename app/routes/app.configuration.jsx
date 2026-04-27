@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { json } from "@remix-run/node";
 import {
   useLoaderData,
@@ -20,9 +19,22 @@ import {
   Checkbox,
   Grid,
   Banner,
+  Toast,
+  Frame,
+  Icon,
+  Badge,
 } from "@shopify/polaris";
+import {
+  SearchIcon,
+  ProductIcon,
+  ViewIcon,
+  SettingsIcon,
+  CheckCircleIcon,
+  InfoIcon,
+} from "@shopify/polaris-icons";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
+import { start } from "node:repl";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
@@ -118,6 +130,15 @@ export default function Configuration() {
     autoGenerate: settings.autoGenerate,
     productFields: settings.productFields || {},
   });
+  const [toastActive, setToastActive] = useState(false);
+
+  useEffect(() => {
+    if (fetcher.data && fetcher.data.success) {
+      setToastActive(true);
+    }
+  }, [fetcher.data]);
+
+  const toggleToastActive = useCallback(() => setToastActive((active) => !active), []);
 
   const handleSave = () => {
     const formData = new FormData();
@@ -153,115 +174,168 @@ export default function Configuration() {
   ];
 
   return (
-    <Page 
-        title="Configuration"
-        backAction={{ content: "Overview", onAction: () => navigate("/app") }}
-    >
-      <BlockStack gap="500">
-        <Card>
-          <BlockStack gap="400">
-            <Text variant="headingMd" as="h3">Store Information</Text>
-            <TextField
-              label="Store Name"
-              value={formState.storeName}
-              onChange={(val) => setFormState({ ...formState, storeName: val })}
-              helpText="The name that will appear in the llms.txt file"
-              autoComplete="off"
-            />
-            <TextField
-              label="Shopify Domain"
-              value={settings.shopifyDomain}
-              disabled
-              helpText="Your Shopify store domain"
-              autoComplete="off"
-            />
-            <TextField
-              label="Custom Domain"
-              value={formState.customDomain}
-              onChange={(val) => setFormState({ ...formState, customDomain: val })}
-              helpText="Your custom domain (e.g. www.mystore.com)"
-              autoComplete="off"
-            />
-            <TextField
-              label="Description"
-              value={formState.description}
-              onChange={(val) => setFormState({ ...formState, description: val })}
-              helpText="Store description for AI assistants"
-              multiline={4}
-              autoComplete="off"
-            />
-          </BlockStack>
-        </Card>
+    <Frame>
+      <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto" }}>
+        <Page 
+            fullWidth
+            title="Configuration"
+            backAction={{ content: "Overview", onAction: () => navigate("/app") }}
+            primaryAction={{
+              content: "Save Settings",
+              loading: fetcher.state !== "idle",
+              onAction: handleSave,
+            }}
+        >
+        <BlockStack gap="600">
+          <div className="llm-premium-banner">
+            <BlockStack gap="200">
+              <Text variant="headingLg" as="h2">Optimization Center</Text>
+              <Text variant="bodyLg" tone="subdued">
+                Configure how your store products and pages are cataloged for AI retrieval. 
+                Higher density metadata leads to better AI recommendations.
+              </Text>
+            </BlockStack>
+          </div>
 
-        <Card>
-          <BlockStack gap="400">
-            <Text variant="headingMd" as="h3">Content Settings</Text>
-            <Checkbox
-              label="Include Products"
-              checked={formState.includeProducts}
-              onChange={(val) => setFormState({ ...formState, includeProducts: val })}
-            />
-            <Checkbox
-              label="Include Collections"
-              checked={formState.includeCollections}
-              onChange={(val) => setFormState({ ...formState, includeCollections: val })}
-            />
-            <Checkbox
-              label="Include Blogs"
-              checked={formState.includeBlogs}
-              onChange={(val) => setFormState({ ...formState, includeBlogs: val })}
-            />
-            <Checkbox
-              label="Include Pages"
-              checked={formState.includePages}
-              onChange={(val) => setFormState({ ...formState, includePages: val })}
-            />
-          </BlockStack>
-        </Card>
-
-        <Card>
-          <BlockStack gap="400">
-            <Text variant="headingMd" as="h3">Product Information Fields</Text>
-            <Text variant="bodyMd">Choose what details to share with AI assistants</Text>
-            <Banner tone="info">
-              <p>Basic fields (Title, URL, Price) are always included.</p>
-            </Banner>
-            <Grid>
-              {productFieldOptions.map((field) => (
-                <Grid.Cell key={field.key} columnSpan={{ xs: 6, sm: 3, md: 3, lg: 4 }}>
-                  <Checkbox
-                    label={field.label}
-                    checked={formState.productFields[field.key]}
-                    onChange={(val) => setFormState({
-                      ...formState,
-                      productFields: { ...formState.productFields, [field.key]: val }
-                    })}
+          <div className="llm-config-grid">
+            {/* Left Column: Core Settings */}
+            <BlockStack gap="500">
+              <Card>
+                <BlockStack gap="400">
+                  <div className="llm-section-header">
+                    <Icon source={SearchIcon} tone="brand" />
+                    <Text variant="headingMd" as="h3">Store Branding</Text>
+                  </div>
+                  
+                  <TextField
+                    label="Public Store Name"
+                    value={formState.storeName}
+                    onChange={(val) => setFormState({ ...formState, storeName: val })}
+                    helpText="This is how AI bots will identify your brand."
+                    autoComplete="off"
                   />
-                </Grid.Cell>
-              ))}
-            </Grid>
-          </BlockStack>
-        </Card>
+                  <TextField
+                    label="Primary Domain Override"
+                    value={formState.customDomain}
+                    onChange={(val) => setFormState({ ...formState, customDomain: val })}
+                    placeholder="e.g. www.yourshop.com"
+                    helpText="Specify if you use a different domain for AI discovery."
+                    autoComplete="off"
+                  />
+                  <TextField
+                    label="Store Description for AI"
+                    value={formState.description}
+                    onChange={(val) => setFormState({ ...formState, description: val })}
+                    helpText="Summarize your brand value. AI models use this as context."
+                    multiline={4}
+                    autoComplete="off"
+                  />
+                </BlockStack>
+              </Card>
 
-        <Card>
-          <BlockStack gap="400">
-            <Text variant="headingMd" as="h3">Auto Generation</Text>
-            <Checkbox
-              label="Enable Auto Generation"
-              checked={formState.autoGenerate}
-              onChange={(val) => setFormState({ ...formState, autoGenerate: val })}
-              helpText="Automatically keep llms.txt updated"
-            />
-          </BlockStack>
-        </Card>
+              <Card>
+                <BlockStack gap="400">
+                  <div className="llm-section-header">
+                    <Icon source={ProductIcon} tone="brand" />
+                    <Text variant="headingMd" as="h3">Product Data Density</Text>
+                  </div>
+                  
+                  <Text variant="bodyMd" tone="subdued">
+                    Select exactly which product attributes should be included in the LLMs.txt file.
+                  </Text>
 
-        <InlineStack align="end">
-          <Button variant="primary" onClick={handleSave} loading={fetcher.state !== "idle"}>
-            Save Settings
-          </Button>
-        </InlineStack>
-      </BlockStack>
-      <Box paddingBlockStart="500"></Box>
-    </Page>
+                  <div className="llm-field-group">
+                    <div className="llm-checkbox-grid">
+                      {productFieldOptions.map((field) => (
+                        <Checkbox
+                          key={field.key}
+                          label={field.label}
+                          checked={formState.productFields[field.key]}
+                          onChange={(val) => setFormState({
+                            ...formState,
+                            productFields: { ...formState.productFields, [field.key]: val }
+                          })}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <Box padding="300" background="bg-surface-info-subdued" borderRadius="200">
+                    <InlineStack gap="300">
+                      <div className="llm-section-header">
+                        <Text variant="bodySm">Title, URL, and Core Pricing are always included by default.</Text>
+                        <Icon source={InfoIcon} tone="info" />
+                      </div>
+                    </InlineStack>
+                  </Box>
+                </BlockStack>
+              </Card>
+            </BlockStack>
+
+            {/* Right Column: Visibility & Automation */}
+            <BlockStack gap="500">
+              <Card>
+                <BlockStack gap="400">
+                  <div className="llm-section-header">
+                    <Text variant="headingMd" as="h3">Inventory Scope</Text>
+                    <Icon source={ViewIcon} tone="brand" />
+                  </div>
+                  <BlockStack gap="300">
+                    <Checkbox
+                      label="Include Products"
+                      checked={formState.includeProducts}
+                      onChange={(val) => setFormState({ ...formState, includeProducts: val })}
+                    />
+                    <Checkbox
+                      label="Include Collections"
+                      checked={formState.includeCollections}
+                      onChange={(val) => setFormState({ ...formState, includeCollections: val })}
+                    />
+                    <Checkbox
+                      label="Include Blogs"
+                      checked={formState.includeBlogs}
+                      onChange={(val) => setFormState({ ...formState, includeBlogs: val })}
+                    />
+                    <Checkbox
+                      label="Include Pages"
+                      checked={formState.includePages}
+                      onChange={(val) => setFormState({ ...formState, includePages: val })}
+                    />
+                  </BlockStack>
+                </BlockStack>
+              </Card>
+              <Card>
+                <BlockStack gap="400">
+                  <div className="llm-section-header">
+                    <Text variant="headingMd" as="h3">Automation</Text>
+                    <Icon source={SettingsIcon} tone="brand" />
+                  </div>
+                  <BlockStack gap="300">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text variant="bodyMd">Sync AI File</Text>
+                      <Badge tone={formState.autoGenerate ? "success" : "warning"}>
+                        {formState.autoGenerate ? "Auto" : "Manual"}
+                      </Badge>
+                    </div>
+                    <Checkbox
+                      label="Enable Auto-Sync"
+                      checked={formState.autoGenerate}
+                      onChange={(val) => setFormState({ ...formState, autoGenerate: val })}
+                    />
+                    <Text variant="bodySm" tone="subdued">
+                      Automatically keep your LLMs.txt in sync.
+                    </Text>
+                  </BlockStack>
+                </BlockStack>
+              </Card>
+            </BlockStack>
+          </div>
+        </BlockStack>
+      </Page>
+    </div>
+      {toastActive && (
+        <Toast content="Settings saved successfully" onDismiss={toggleToastActive} />
+      )}
+    </Frame>
   );
 }

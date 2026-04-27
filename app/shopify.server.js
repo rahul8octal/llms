@@ -9,6 +9,7 @@ import {
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import { restResources } from "@shopify/shopify-api/rest/admin/2025-01";
 import prisma from "./db.server";
+import { syncLLMsFile } from "./services/syncer.server";
 import { MONTHLY_PLAN, ANNUAL_PLAN } from "./constants";
 
 const COMBINED_SHOP_DATA_QUERY = `
@@ -55,6 +56,18 @@ const shopify = shopifyApp({
     SHOP_REDACT: {
       deliveryMethod: DeliveryMethod.Http,
       callbackUrl: "/webhooks/shopify/shop_data_erasure",
+    },
+    PRODUCTS_CREATE: {
+      deliveryMethod: DeliveryMethod.Http,
+      callbackUrl: "/webhooks/shopify/products",
+    },
+    PRODUCTS_UPDATE: {
+      deliveryMethod: DeliveryMethod.Http,
+      callbackUrl: "/webhooks/shopify/products",
+    },
+    PRODUCTS_DELETE: {
+      deliveryMethod: DeliveryMethod.Http,
+      callbackUrl: "/webhooks/shopify/products",
     }
   },
   hooks: {
@@ -98,7 +111,6 @@ const shopify = shopifyApp({
               null;
 
             if (primaryLocale) {
-              const normalizedLocale = String(primaryLocale).toLowerCase();
               const existingSettings = await prisma.llmSetting.findUnique({
                 where: { shop: session.shop },
               });
@@ -111,6 +123,10 @@ const shopify = shopifyApp({
                   },
                 });
               }
+
+              // Sync file immediately for the first time
+              console.log(`[afterAuth] Performing initial sync for ${session.shop}`);
+              await syncLLMsFile(admin, session.shop);
             }
           }
         } catch (err) {

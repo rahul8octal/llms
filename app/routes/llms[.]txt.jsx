@@ -27,6 +27,31 @@ export const loader = async ({ request }) => {
     "Cache-Control": "public, max-age=3600",
   };
 
+  // Log the visit (background, don't await/block the response)
+  const userAgent = request.headers.get("user-agent") || "";
+  const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "";
+  
+  // Basic crawler detection
+  let crawlerName = "Unknown AI";
+  if (userAgent.toLowerCase().includes("gptbot")) crawlerName = "ChatGPT";
+  else if (userAgent.toLowerCase().includes("claudebot")) crawlerName = "Claude";
+  else if (userAgent.toLowerCase().includes("google-extended")) crawlerName = "Gemini";
+  else if (userAgent.toLowerCase().includes("perplexity")) crawlerName = "Perplexity";
+  else if (userAgent.toLowerCase().includes("bingbot")) crawlerName = "Bing";
+  else if (userAgent.toLowerCase().includes("applebot")) crawlerName = "Apple";
+  else if (userAgent.toLowerCase().includes("facebookbot") || userAgent.toLowerCase().includes("meta-externalagent")) crawlerName = "Meta";
+  else if (userAgent.toLowerCase().includes("ccbot")) crawlerName = "CommonCrawl";
+  
+  // Save log in background
+  prisma.llmLog.create({
+    data: {
+      shop,
+      userAgent,
+      ipAddress,
+      crawlerName
+    }
+  }).catch(e => console.error("Failed to log LLM visit", e));
+
   if (download === "true") {
     headers["Content-Disposition"] = 'attachment; filename="llms.txt"';
   }

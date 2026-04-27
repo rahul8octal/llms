@@ -10,6 +10,16 @@ export async function getProducts(admin, limit = 50) {
               title
               handle
               description
+              vendor
+              productType
+              tags
+              variants(first: 1) {
+                edges {
+                  node {
+                    sku
+                  }
+                }
+              }
               priceRange {
                 minVariantPrice {
                   amount

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { json } from "@remix-run/node";
 import {
   useLoaderData,
@@ -19,7 +19,16 @@ import {
   Badge,
   Banner,
   List,
+  Icon,
+  Toast,
+  Frame,
 } from "@shopify/polaris";
+import { 
+  InfoIcon,
+  SearchIcon,
+  LockIcon,
+  ViewIcon,
+} from "@shopify/polaris-icons";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 
@@ -60,6 +69,15 @@ export default function Crawlers() {
   const navigate = useNavigate();
 
   const [selectedCrawlers, setSelectedCrawlers] = useState(settings.selectedCrawlers || {});
+  const [toastActive, setToastActive] = useState(false);
+
+  useEffect(() => {
+    if (fetcher.data && fetcher.data.success) {
+      setToastActive(true);
+    }
+  }, [fetcher.data]);
+
+  const toggleToastActive = useCallback(() => setToastActive((active) => !active), []);
 
   const handleSave = () => {
     const formData = new FormData();
@@ -101,89 +119,170 @@ export default function Crawlers() {
   ];
 
   return (
-    <Page 
-        title="AI Crawler Settings"
-        backAction={{ content: "Overview", onAction: () => navigate("/app") }}
-    >
-      <BlockStack gap="500">
-          <Grid>
-            <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 8 }}>
-              <Card>
-                <BlockStack gap="400">
-                  <Text>
-                    Choose which AI crawlers can access your LLMs.txt file. This helps control which AI platforms can discover and recommend your products.
+    <Frame>
+      <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto" }}>
+        <Page 
+            fullWidth
+            title="AI Crawler Settings"
+            backAction={{ content: "Overview", onAction: () => navigate("/app") }}
+            primaryAction={{
+              content: "Save Crawler Settings",
+              loading: fetcher.state !== "idle",
+              onAction: handleSave,
+            }}
+        >
+        <BlockStack gap="600">
+          <div className="llm-premium-banner">
+            <BlockStack gap="400">
+              <InlineStack align="space-between" blockAlign="center">
+                <BlockStack gap="200">
+                  <InlineStack gap="300" blockAlign="center">
+                    <div style={{ backgroundColor: 'var(--llm-primary)', padding: '8px', borderRadius: '8px', color: 'white' }}>
+                      <Icon source={LockIcon} />
+                    </div>
+                    <Text variant="headingLg" as="h2">Manage AI Visibility</Text>
+                  </InlineStack>
+                  <Text variant="bodyLg" tone="subdued">
+                    Take control of how AI systems interact with your store. Block or allow specific platforms to optimize your presence in AI search.
                   </Text>
-                  <Banner tone="info">
-                    <p><strong>Note:</strong> Some AI crawlers may not consistently follow robots.txt directives. This configuration serves as a preference indicator for compliant crawlers.</p>
-                  </Banner>
-                  
-                  {crawlerGroups.map((group) => (
-                    <BlockStack gap="300" key={group.title}>
-                      <Text variant="headingSm" as="h4">{group.title}</Text>
-                      <Grid>
-                        {group.items.map((item) => (
-                          <Grid.Cell key={item.key} columnSpan={{ xs: 6, sm: 3, md: 3, lg: 4 }}>
-                            <Card padding="200">
-                              <BlockStack gap="200">
-                                <InlineStack align="space-between" blockAlign="center">
-                                  <Text fontWeight="bold">{item.label}</Text>
-                                  <Checkbox
-                                    label=""
-                                    checked={selectedCrawlers[item.key]}
-                                    onChange={(val) => setSelectedCrawlers({
-                                      ...selectedCrawlers,
-                                      [item.key]: val
-                                    })}
-                                  />
-                                </InlineStack>
-                                <Text variant="bodySm" tone="subdued">{item.desc}</Text>
-                              </BlockStack>
-                            </Card>
-                          </Grid.Cell>
-                        ))}
-                      </Grid>
-                    </BlockStack>
-                  ))}
                 </BlockStack>
-              </Card>
+                <div style={{ padding: '8px', borderRadius: '20px', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                  <InlineStack gap="200" blockAlign="center">
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e' }}></div>
+                    <Text variant="bodySm" fontWeight="bold">Robots.txt Active</Text>
+                  </InlineStack>
+                </div>
+              </InlineStack>
+              
+              <div style={{ backgroundColor: '#f0f4ff', padding: '16px', borderRadius: '12px', border: '1px solid #e0e7ff' }}>
+                <InlineStack gap="300" blockAlign="center">
+                  <Icon source={InfoIcon} tone="brand" />
+                  <Text variant="bodyMd" tone="brand">
+                    Reputable AI companies (OpenAI, Google, Bing) respect these settings. Experimental crawlers may vary in compliance.
+                  </Text>
+                </InlineStack>
+              </div>
+            </BlockStack>
+          </div>
+
+          <Grid>
+            <Grid.Cell columnSpan={{ xs: 6, sm: 4, md: 4, lg: 8 }}>
+              <BlockStack gap="600">
+                {crawlerGroups.map((group) => (
+                  <div key={group.title}>
+                    <div className="llm-section-header">
+                      <Text variant="headingSm" tone="subdued">{group.title}</Text>
+                    </div>
+                    <Grid>
+                      {group.items.map((item) => (
+                        <Grid.Cell key={item.key} columnSpan={{ xs: 6, sm: 3, md: 3, lg: 6 }}>
+                          <div 
+                            className={`llm-crawler-card ${selectedCrawlers[item.key] ? 'active' : ''}`}
+                            onClick={() => setSelectedCrawlers({
+                              ...selectedCrawlers,
+                              [item.key]: !selectedCrawlers[item.key]
+                            })}
+                          >
+                            <InlineStack align="space-between" blockAlign="center">
+                              <Text fontWeight="bold">{item.label}</Text>
+                              <Checkbox
+                                label=""
+                                checked={selectedCrawlers[item.key]}
+                                onChange={() => {}} // Handled by div click
+                              />
+                            </InlineStack>
+                            <Text variant="bodySm" tone="subdued">{item.desc}</Text>
+                          </div>
+                        </Grid.Cell>
+                      ))}
+                    </Grid>
+                  </div>
+                ))}
+              </BlockStack>
             </Grid.Cell>
-            <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 4 }}>
+
+            <Grid.Cell columnSpan={{ xs: 6, sm: 2, md: 2, lg: 4 }}>
               <BlockStack gap="400">
                 <Card>
-                  <BlockStack gap="200">
-                    <Text variant="headingMd" as="h3">Crawler Status</Text>
-                    <InlineStack align="space-between">
-                      <Text>Active Crawlers</Text>
-                      <Badge tone="info">{Object.values(selectedCrawlers).filter(Boolean).length}</Badge>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text>Total Available</Text>
-                      <Badge>{Object.keys(selectedCrawlers).length}</Badge>
-                    </InlineStack>
+                  <BlockStack gap="400">
+                    <div className="llm-section-header">
+                      <Icon source={ViewIcon} tone="brand" />
+                      <Text variant="headingMd" as="h3">System Analytics</Text>
+                    </div>
+                    
+                    <BlockStack gap="300">
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        backgroundColor: '#f8fafc',
+                        padding: '12px 16px',
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <Text variant="bodyMd">Permitted Crawlers</Text>
+                        <Badge tone="success">{Object.values(selectedCrawlers).filter(Boolean).length}</Badge>
+                      </div>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        backgroundColor: '#fff',
+                        padding: '12px 16px',
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <Text variant="bodyMd">Blocked Crawlers</Text>
+                        <Badge tone="warning">{Object.keys(selectedCrawlers).length - Object.values(selectedCrawlers).filter(Boolean).length}</Badge>
+                      </div>
+                    </BlockStack>
+
+                    <div style={{ 
+                      backgroundColor: 'var(--p-color-bg-surface-brand-subdued)', 
+                      padding: '12px', 
+                      borderRadius: '8px',
+                      display: 'flex',
+                      gap: '12px',
+                      alignItems: 'center'
+                    }}>
+                      <div style={{ fontSize: '20px' }}>⚡</div>
+                      <Text variant="bodySm" tone="brand">
+                        Updates apply to your robots.txt dynamically.
+                      </Text>
+                    </div>
                   </BlockStack>
                 </Card>
+
                 <Card>
-                  <BlockStack gap="200">
-                    <Text variant="headingMd" as="h3">Popular Crawlers</Text>
-                    <List>
-                      <List.Item>ChatGPT (GPTBot)</List.Item>
-                      <List.Item>Claude (ClaudeBot)</List.Item>
-                      <List.Item>Perplexity AI</List.Item>
-                      <List.Item>Google AI (Google-Extended)</List.Item>
-                      <List.Item>Bing (BingBot)</List.Item>
-                    </List>
+                  <BlockStack gap="400">
+                    <div className="llm-section-header">
+                      <Icon source={SearchIcon} tone="brand" />
+                      <Text variant="headingMd" as="h3">Popular Agents</Text>
+                    </div>
+                    
+                    <BlockStack gap="300">
+                      {[
+                        { bot: "GPTBot", platform: "ChatGPT" },
+                        { bot: "ClaudeBot", platform: "Claude.ai" },
+                        { bot: "Google-Extended", platform: "Gemini" }
+                      ].map((item) => (
+                        <div key={item.bot} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Badge tone="info">{item.bot}</Badge>
+                          <Text variant="bodySm" tone="subdued">{item.platform}</Text>
+                        </div>
+                      ))}
+                    </BlockStack>
                   </BlockStack>
                 </Card>
               </BlockStack>
             </Grid.Cell>
           </Grid>
-          <InlineStack align="end">
-            <Button variant="primary" onClick={handleSave} loading={fetcher.state !== "idle"}>
-              Save Crawler Settings
-            </Button>
-          </InlineStack>
-      </BlockStack>
-      <Box paddingBlockStart="500"></Box>
-    </Page>
-  );
+        </BlockStack>
+      </Page>
+    </div>
+    {toastActive && (
+      <Toast content="Crawler settings saved" onDismiss={toggleToastActive} />
+    )}
+  </Frame>
+);
 }

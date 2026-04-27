@@ -25,3 +25,4 @@ database.sqlite
 .shopify.lock
 shopify.app.overlay-vishal.toml
 package-lock.json
+public/llms-files/*
